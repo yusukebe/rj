@@ -53,15 +53,22 @@ func request(url string, param param) {
 	}
 	defer res.Body.Close()
 
-	kv := make(map[string]string)
+	r := make(map[string]interface{})
+
+	r["status"] = res.Status
+	r["code"] = res.StatusCode
+
+	headers := make(map[string]interface{})
 
 	for key, value := range res.Header {
 		headkey := strings.ToLower(key)
-		headValue := strings.Join(value, ", ")
-		kv[headkey] = headValue
+		headValue := strings.Join(value, ", ") // XXX
+		headers[headkey] = headValue
 	}
 
-	bytes, err := json.Marshal(kv)
+	r["header"] = headers
+
+	bytes, err := json.Marshal(r)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
