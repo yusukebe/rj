@@ -11,7 +11,8 @@ import (
 )
 
 type param struct {
-	method string
+	method    string
+	userAgent string
 }
 
 var rootCmd = &cobra.Command{
@@ -25,8 +26,10 @@ var rootCmd = &cobra.Command{
 		}
 		url := args[0]
 		method, _ := cmd.Flags().GetString("method")
+		userAgent, _ := cmd.Flags().GetString("agent")
 		param := param{
-			method: method,
+			method:    method,
+			userAgent: userAgent,
 		}
 		request(url, param)
 	},
@@ -34,6 +37,7 @@ var rootCmd = &cobra.Command{
 
 func init() {
 	rootCmd.Flags().StringP("method", "X", "GET", "HTTP Request method")
+	rootCmd.Flags().StringP("agent", "A", "rj/v0.0.1", "User-Agent name")
 }
 
 func Execute() {
@@ -45,6 +49,11 @@ func Execute() {
 
 func request(url string, param param) {
 	req, _ := http.NewRequest("GET", url, nil)
+
+	if param.userAgent != "" {
+		req.Header.Set("User-Agent", param.userAgent)
+	}
+
 	client := new(http.Client)
 	res, err := client.Do(req)
 	if err != nil {
