@@ -8,7 +8,7 @@
 ## Installation
 
 ```
-$ go get github.com/yusukebe/rj/cmd/rj
+$ go install github.com/yusukebe/rj/cmd/rj@latest
 ```
 
 ## Usage
