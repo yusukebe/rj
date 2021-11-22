@@ -61,7 +61,7 @@ func request(url string, param param) {
 	if param.headers != nil {
 		for _, h := range param.headers {
 			kv := strings.Split(h, ":")
-			req.Header.Set(kv[0], kv[1])
+			req.Header.Set(strings.TrimSpace(kv[0]), kv[1])
 		}
 	}
 
