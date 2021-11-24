@@ -17,6 +17,20 @@ $ go install github.com/yusukebe/rj/cmd/rj@latest
 $ rj http://example.com/
 ```
 
+```
+rj is a command line tool show the HTTP Response as JSON
+
+Usage:
+  rj [url] [flags]
+
+Flags:
+  -A, --agent string         User-Agent name (default "rj/v0.0.1")
+  -H, --header stringArray   HTTP Request Header
+  -h, --help                 help for rj
+  -b, --include-body         Include Response body
+  -X, --method string        HTTP Request method (default "GET")
+```
+
 ## Author
 
 Yusuke Wada <https://github.com/yusukebe>
