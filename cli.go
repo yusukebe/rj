@@ -1,11 +1,15 @@
 package rj
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"math"
 	"net/http"
+	"net/http/httptrace"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 )
@@ -65,18 +69,59 @@ func request(url string, param param) {
 		}
 	}
 
+	var start, connect, dns, tlsHandshake time.Time
+	var dnsMs, sslMs, connectionMs, ttfbMs, totalMs float64
+
+	trace := &httptrace.ClientTrace{
+		DNSStart: func(dsi httptrace.DNSStartInfo) { dns = time.Now() },
+		DNSDone: func(ddi httptrace.DNSDoneInfo) {
+			dnsMs = timeToMs(dns)
+		},
+
+		TLSHandshakeStart: func() { tlsHandshake = time.Now() },
+		TLSHandshakeDone: func(cs tls.ConnectionState, err error) {
+			sslMs = timeToMs(tlsHandshake)
+		},
+
+		ConnectStart: func(network, addr string) { connect = time.Now() },
+		ConnectDone: func(network, addr string, err error) {
+			connectionMs = timeToMs(connect)
+		},
+
+		GotFirstResponseByte: func() {
+			ttfbMs = timeToMs(start)
+			ttfbMs = ttfbMs - dnsMs - sslMs - connectionMs
+			ttfbMs = floor(ttfbMs)
+		},
+	}
+
+	req = req.WithContext(httptrace.WithClientTrace(req.Context(), trace))
+
+	start = time.Now()
+
 	client := new(http.Client)
 	res, err := client.Do(req)
+
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+
 	defer res.Body.Close()
+	totalMs = timeToMs(start)
 
 	r := make(map[string]interface{})
 
 	r["status"] = res.Status
 	r["code"] = res.StatusCode
+
+	timing := make(map[string]interface{})
+	timing["dns_lookup"] = dnsMs
+	timing["tcp_connection"] = connectionMs
+	timing["tls_handshake"] = sslMs
+	timing["ttfb"] = ttfbMs
+	timing["total"] = totalMs
+	r["timing"] = timing
 
 	headers := make(map[string]interface{})
 
@@ -95,4 +140,12 @@ func request(url string, param param) {
 	}
 
 	fmt.Println(string(bytes))
+}
+
+func timeToMs(t time.Time) float64 {
+	return floor(time.Since(t).Seconds())
+}
+
+func floor(f float64) float64 {
+	return math.Floor(f*100000) / 100000
 }
