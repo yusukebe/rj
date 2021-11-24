@@ -69,7 +69,7 @@ func request(url string, param param) {
 		}
 	}
 
-	var start, connect, dns, tlsHandshake time.Time
+	var start, connect, dns, tlsHandshake, wait time.Time
 	var dnsMs, sslMs, connectionMs, ttfbMs, totalMs float64
 
 	trace := &httptrace.ClientTrace{
@@ -78,20 +78,19 @@ func request(url string, param param) {
 			dnsMs = timeToMs(dns)
 		},
 
-		TLSHandshakeStart: func() { tlsHandshake = time.Now() },
-		TLSHandshakeDone: func(cs tls.ConnectionState, err error) {
-			sslMs = timeToMs(tlsHandshake)
-		},
-
 		ConnectStart: func(network, addr string) { connect = time.Now() },
 		ConnectDone: func(network, addr string, err error) {
 			connectionMs = timeToMs(connect)
 		},
 
+		TLSHandshakeStart: func() { tlsHandshake = time.Now() },
+		TLSHandshakeDone: func(cs tls.ConnectionState, err error) {
+			sslMs = timeToMs(tlsHandshake)
+			wait = time.Now()
+		},
+
 		GotFirstResponseByte: func() {
-			ttfbMs = timeToMs(start)
-			ttfbMs = ttfbMs - dnsMs - sslMs - connectionMs
-			ttfbMs = floor(ttfbMs)
+			ttfbMs = timeToMs(wait)
 		},
 	}
 
