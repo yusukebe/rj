@@ -4,7 +4,6 @@
 
 ![Screenshot](https://user-images.githubusercontent.com/10682/143195610-9c596786-f347-477b-9839-30c9c22f02e1.png)
 
-
 ## Installation
 
 ```
@@ -30,6 +29,10 @@ Flags:
   -b, --include-body         Include Response body
   -X, --method string        HTTP Request method (default "GET")
 ```
+
+with `-b` Option:
+
+![Screenshot](https://user-images.githubusercontent.com/10682/143204005-7fc8c8df-0a55-4905-9ad3-ef9cb76e268d.png)
 
 ## Author
 
