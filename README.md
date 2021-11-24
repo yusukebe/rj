@@ -2,7 +2,7 @@
 
 `rj` is a command line tool show the HTTP Response as JSON
 
-![Screenshot](https://user-images.githubusercontent.com/10682/140741605-7ae52cdf-e5c3-4c72-9cb7-78e7dbc7c3ea.png)
+![Screenshot](https://user-images.githubusercontent.com/10682/143195610-9c596786-f347-477b-9839-30c9c22f02e1.png)
 
 
 ## Installation
