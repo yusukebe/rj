@@ -8,16 +8,19 @@ import (
 	"net/http"
 	"net/http/httptrace"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 
+	"github.com/dyatlov/go-htmlinfo/htmlinfo"
 	"github.com/spf13/cobra"
 )
 
 type param struct {
-	method    string
-	userAgent string
-	headers   []string
+	method      string
+	userAgent   string
+	headers     []string
+	includeBody bool
 }
 
 var rootCmd = &cobra.Command{
@@ -33,10 +36,12 @@ var rootCmd = &cobra.Command{
 		method, _ := cmd.Flags().GetString("method")
 		userAgent, _ := cmd.Flags().GetString("agent")
 		headers, _ := cmd.Flags().GetStringArray("header")
+		includeBody, _ := cmd.Flags().GetBool("include-body")
 		param := param{
-			method:    method,
-			userAgent: userAgent,
-			headers:   headers,
+			method:      method,
+			userAgent:   userAgent,
+			headers:     headers,
+			includeBody: includeBody,
 		}
 		request(url, param)
 	},
@@ -46,6 +51,7 @@ func init() {
 	rootCmd.Flags().StringP("method", "X", "GET", "HTTP Request method")
 	rootCmd.Flags().StringP("agent", "A", "rj/v0.0.1", "User-Agent name")
 	rootCmd.Flags().StringArrayP("header", "H", nil, "HTTP Request Header")
+	rootCmd.Flags().BoolP("include-body", "b", false, "Include Response body")
 }
 
 func Execute() {
@@ -122,7 +128,7 @@ func request(url string, param param) {
 	timing["total"] = totalMs
 	r["timing"] = timing
 
-	headers := make(map[string]interface{})
+	headers := make(map[string]string)
 
 	for key, value := range res.Header {
 		headkey := strings.ToLower(key)
@@ -131,6 +137,28 @@ func request(url string, param param) {
 	}
 
 	r["header"] = headers
+
+	if param.includeBody {
+		if contentType, ok := headers["content-type"]; ok {
+			if matchRegexp(contentType, `text/html`) {
+				info := htmlinfo.NewHTMLInfo()
+				err = info.Parse(res.Body, &url, &contentType)
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(1)
+				}
+				r["body"] = info
+			} else if matchRegexp(contentType, `application/json`) {
+				var data map[string]interface{}
+				err := json.NewDecoder(res.Body).Decode(&data)
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(1)
+				}
+				r["body"] = data
+			}
+		}
+	}
 
 	bytes, err := json.Marshal(r)
 	if err != nil {
@@ -147,4 +175,9 @@ func timeToMs(t time.Time) float64 {
 
 func floor(f float64) float64 {
 	return math.Floor(f*100000) / 100000
+}
+
+func matchRegexp(str string, regString string) bool {
+	reg := regexp.MustCompile(regString)
+	return reg.MatchString(str)
 }
