@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"net"
 	"net/http"
 	"net/http/httptrace"
 	"os"
@@ -21,6 +22,7 @@ type param struct {
 	userAgent   string
 	headers     []string
 	includeBody bool
+	http1_1     bool
 }
 
 var rootCmd = &cobra.Command{
@@ -37,11 +39,13 @@ var rootCmd = &cobra.Command{
 		userAgent, _ := cmd.Flags().GetString("agent")
 		headers, _ := cmd.Flags().GetStringArray("header")
 		includeBody, _ := cmd.Flags().GetBool("include-body")
+		http1_1, _ := cmd.Flags().GetBool("http1.1")
 		param := param{
 			method:      method,
 			userAgent:   userAgent,
 			headers:     headers,
 			includeBody: includeBody,
+			http1_1:     http1_1,
 		}
 		request(url, param)
 	},
@@ -52,6 +56,7 @@ func init() {
 	rootCmd.Flags().StringP("agent", "A", "rj/v0.0.1", "User-Agent name")
 	rootCmd.Flags().StringArrayP("header", "H", nil, "HTTP Request Header")
 	rootCmd.Flags().BoolP("include-body", "b", false, "Include Response body")
+	rootCmd.Flags().BoolP("http1.1", "", false, "Use HTTP/1.1")
 }
 
 func Execute() {
@@ -104,7 +109,14 @@ func request(url string, param param) {
 
 	start = time.Now()
 
-	client := new(http.Client)
+	forceHTTP2 := !param.http1_1 // Default is true
+	client := &http.Client{
+		Transport: &http.Transport{
+			DialContext:       (&net.Dialer{}).DialContext,
+			ForceAttemptHTTP2: forceHTTP2,
+		},
+	}
+
 	res, err := client.Do(req)
 
 	if err != nil {
@@ -119,7 +131,7 @@ func request(url string, param param) {
 
 	r["status"] = res.Status
 	r["code"] = res.StatusCode
-	r["proto"] = res.Proto
+	r["protocol"] = res.Proto
 
 	timing := make(map[string]interface{})
 	timing["dns_lookup"] = dnsMs
@@ -139,6 +151,7 @@ func request(url string, param param) {
 
 	r["header"] = headers
 
+	// XXX
 	if param.includeBody {
 		if contentType, ok := headers["content-type"]; ok {
 			if matchRegexp(contentType, `text/html`) {
