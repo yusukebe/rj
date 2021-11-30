@@ -47,6 +47,7 @@ var rootCmd = &cobra.Command{
 		includeBody, _ := cmd.Flags().GetBool("include-body")
 		http1_1, _ := cmd.Flags().GetBool("http1.1")
 		http3, _ := cmd.Flags().GetBool("http3")
+
 		param := param{
 			method:      method,
 			userAgent:   userAgent,
@@ -210,7 +211,6 @@ func http3RoundTripper() *http3.RoundTripper {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	var qconf quic.Config
 	roundTripper := &http3.RoundTripper{
 		TLSClientConfig: &tls.Config{
