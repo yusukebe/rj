@@ -119,7 +119,7 @@ func request(url string, param param) {
 
 	r["status"] = res.Status
 	r["code"] = res.StatusCode
-	r["proto"] = res.Proto
+	r["protocol"] = res.Proto
 
 	timing := make(map[string]interface{})
 	timing["dns_lookup"] = dnsMs
