@@ -2,8 +2,10 @@ package rj
 
 import (
 	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
+	"log"
 	"math"
 	"net"
 	"net/http"
@@ -12,6 +14,9 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/lucas-clemente/quic-go"
+	"github.com/lucas-clemente/quic-go/http3"
 
 	"github.com/dyatlov/go-htmlinfo/htmlinfo"
 	"github.com/spf13/cobra"
@@ -23,6 +28,7 @@ type param struct {
 	headers     []string
 	includeBody bool
 	http1_1     bool
+	http3       bool
 }
 
 var rootCmd = &cobra.Command{
@@ -40,12 +46,15 @@ var rootCmd = &cobra.Command{
 		headers, _ := cmd.Flags().GetStringArray("header")
 		includeBody, _ := cmd.Flags().GetBool("include-body")
 		http1_1, _ := cmd.Flags().GetBool("http1.1")
+		http3, _ := cmd.Flags().GetBool("http3")
+
 		param := param{
 			method:      method,
 			userAgent:   userAgent,
 			headers:     headers,
 			includeBody: includeBody,
 			http1_1:     http1_1,
+			http3:       http3,
 		}
 		request(url, param)
 	},
@@ -57,6 +66,7 @@ func init() {
 	rootCmd.Flags().StringArrayP("header", "H", nil, "HTTP Request Header")
 	rootCmd.Flags().BoolP("include-body", "b", false, "Include Response body")
 	rootCmd.Flags().BoolP("http1.1", "", false, "Use HTTP/1.1")
+	rootCmd.Flags().BoolP("http3", "", false, "Use HTTP/3")
 }
 
 func Execute() {
@@ -109,12 +119,17 @@ func request(url string, param param) {
 
 	start = time.Now()
 
-	forceHTTP2 := !param.http1_1 // Default is true
-	client := &http.Client{
-		Transport: &http.Transport{
-			DialContext:       (&net.Dialer{}).DialContext,
-			ForceAttemptHTTP2: forceHTTP2,
-		},
+	var client *http.Client
+	if param.http3 {
+		client = &http.Client{
+			Transport: http3RoundTripper(),
+		}
+	} else if param.http1_1 {
+		client = &http.Client{
+			Transport: http1_1Transport(),
+		}
+	} else {
+		client = &http.Client{}
 	}
 
 	res, err := client.Do(req)
@@ -181,6 +196,30 @@ func request(url string, param param) {
 	}
 
 	fmt.Println(string(bytes))
+}
+
+func http1_1Transport() *http.Transport {
+	transport := &http.Transport{
+		DialContext:       (&net.Dialer{}).DialContext,
+		ForceAttemptHTTP2: false,
+	}
+	return transport
+}
+
+func http3RoundTripper() *http3.RoundTripper {
+	pool, err := x509.SystemCertPool()
+	if err != nil {
+		log.Fatal(err)
+	}
+	var qconf quic.Config
+	roundTripper := &http3.RoundTripper{
+		TLSClientConfig: &tls.Config{
+			RootCAs: pool,
+		},
+		QuicConfig: &qconf,
+	}
+	defer roundTripper.Close()
+	return roundTripper
 }
 
 func timeToMs(t time.Time) float64 {
