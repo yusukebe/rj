@@ -24,6 +24,7 @@ Usage:
 
 Flags:
   -A, --agent string         User-Agent name (default "rj/v0.0.1")
+  -u, --basic string         Basic Auth username:password
   -H, --header stringArray   HTTP Request Header
   -h, --help                 help for rj
       --http1.1              Use HTTP/1.1
@@ -38,9 +39,7 @@ with `-b` Option:
 
 support HTTP/3 with `--http3` option:
 
-![Screenshot](
-https://user-images.githubusercontent.com/10682/143975571-3925c02d-113d-414f-b2cc-a445c54bbd18.png)
-
+![Screenshot](https://user-images.githubusercontent.com/10682/143975571-3925c02d-113d-414f-b2cc-a445c54bbd18.png)
 
 ## Author
 

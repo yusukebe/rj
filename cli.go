@@ -29,6 +29,7 @@ type param struct {
 	includeBody bool
 	http1_1     bool
 	http3       bool
+	basicAuth   string
 }
 
 var rootCmd = &cobra.Command{
@@ -47,6 +48,7 @@ var rootCmd = &cobra.Command{
 		includeBody, _ := cmd.Flags().GetBool("include-body")
 		http1_1, _ := cmd.Flags().GetBool("http1.1")
 		http3, _ := cmd.Flags().GetBool("http3")
+		basicAuth, _ := cmd.Flags().GetString("basic")
 
 		param := param{
 			method:      method,
@@ -55,6 +57,7 @@ var rootCmd = &cobra.Command{
 			includeBody: includeBody,
 			http1_1:     http1_1,
 			http3:       http3,
+			basicAuth:   basicAuth,
 		}
 		request(url, param)
 	},
@@ -67,6 +70,7 @@ func init() {
 	rootCmd.Flags().BoolP("include-body", "b", false, "Include Response body")
 	rootCmd.Flags().BoolP("http1.1", "", false, "Use HTTP/1.1")
 	rootCmd.Flags().BoolP("http3", "", false, "Use HTTP/3")
+	rootCmd.Flags().StringP("basic", "u", "", "Basic Auth username:password")
 }
 
 func Execute() {
@@ -88,6 +92,11 @@ func request(url string, param param) {
 			kv := strings.Split(h, ":")
 			req.Header.Set(strings.TrimSpace(kv[0]), kv[1])
 		}
+	}
+
+	if param.basicAuth != "" {
+		kv := strings.Split(param.basicAuth, ":")
+		req.SetBasicAuth(kv[0], kv[1])
 	}
 
 	var start, connect, dns, tlsHandshake, wait time.Time
