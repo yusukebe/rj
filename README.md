@@ -2,7 +2,7 @@
 
 `rj` is a command line tool show the HTTP Response as JSON
 
-![Screenshot](https://user-images.githubusercontent.com/10682/143195610-9c596786-f347-477b-9839-30c9c22f02e1.png)
+![Screenshot](https://user-images.githubusercontent.com/10682/143975194-2a808418-a4fe-4570-8d16-6495a6d54b7a.png)
 
 ## Installation
 
@@ -34,7 +34,13 @@ Flags:
 
 with `-b` Option:
 
-![Screenshot](https://user-images.githubusercontent.com/10682/143204005-7fc8c8df-0a55-4905-9ad3-ef9cb76e268d.png)
+![Screenshot](https://user-images.githubusercontent.com/10682/143975402-6cb0d463-acd6-4ccc-ba0b-439998414ae4.png)
+
+support HTTP/3 with `--http3` option:
+
+![Screenshot](
+https://user-images.githubusercontent.com/10682/143975571-3925c02d-113d-414f-b2cc-a445c54bbd18.png)
+
 
 ## Author
 
