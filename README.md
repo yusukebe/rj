@@ -26,6 +26,8 @@ Flags:
   -A, --agent string         User-Agent name (default "rj/v0.0.1")
   -H, --header stringArray   HTTP Request Header
   -h, --help                 help for rj
+      --http1.1              Use HTTP/1.1
+      --http3                Use HTTP/3
   -b, --include-body         Include Response body
   -X, --method string        HTTP Request method (default "GET")
 ```
