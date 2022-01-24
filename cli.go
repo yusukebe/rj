@@ -102,8 +102,8 @@ func request(url string, param param) {
 		req.SetBasicAuth(kv[0], kv[1])
 	}
 
-	var start, connect, dns, tlsHandshake, wait time.Time
-	var dnsMs, sslMs, connectionMs, ttfbMs, totalMs float64
+	var start, connect, dns, tlsHandshake, wait, download time.Time
+	var dnsMs, sslMs, connectionMs, ttfbMs, downloadMs, totalMs float64
 
 	trace := &httptrace.ClientTrace{
 		DNSStart: func(dsi httptrace.DNSStartInfo) { dns = time.Now() },
@@ -124,6 +124,7 @@ func request(url string, param param) {
 
 		GotFirstResponseByte: func() {
 			ttfbMs = timeToMs(wait)
+			download = time.Now()
 		},
 	}
 
@@ -152,6 +153,7 @@ func request(url string, param param) {
 	}
 
 	defer res.Body.Close()
+	downloadMs = timeToMs(download)
 	totalMs = timeToMs(start)
 
 	r := make(map[string]interface{})
@@ -165,6 +167,7 @@ func request(url string, param param) {
 	timing["tcp_connection"] = connectionMs
 	timing["tls_handshake"] = sslMs
 	timing["ttfb"] = ttfbMs
+	timing["content_transfer"] = downloadMs
 	timing["total"] = totalMs
 	r["timing"] = timing
 
@@ -216,5 +219,5 @@ func timeToMs(t time.Time) float64 {
 }
 
 func floor(f float64) float64 {
-	return math.Floor(f*100000) / 100000
+	return math.Floor(f*100000) / 100
 }
