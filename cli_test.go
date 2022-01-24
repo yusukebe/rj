@@ -69,7 +69,10 @@ func TestNewCmd(t *testing.T) {
 	cmd.SetOut(buffer)
 
 	cmd.SetArgs([]string{"--version"})
-	cmd.Execute()
+	err := cmd.Execute()
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	actual := strings.TrimSpace(buffer.String())
 	expect := "rj version " + Version
