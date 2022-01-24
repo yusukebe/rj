@@ -5,6 +5,7 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"math"
 	"net"
@@ -21,54 +22,62 @@ import (
 )
 
 type param struct {
-	method    string
-	userAgent string
-	headers   []string
-	http1_1   bool
-	http3     bool
-	basicAuth string
+	method       string
+	userAgent    string
+	headers      []string
+	http1_1      bool
+	http3        bool
+	basicAuth    string
+	outputWriter io.Writer
 }
 
-var rootCmd = &cobra.Command{
-	Use:   "rj [url]",
-	Short: "rj is a command line tool show the HTTP Response as JSON",
-	Run: func(cmd *cobra.Command, args []string) {
+func newCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "rj [url]",
+		Short:   "CLI for printing HTTP Response as JSON.",
+		Version: Version,
+		Run: func(cmd *cobra.Command, args []string) {
 
-		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
-		}
-		url := args[0]
-		method, _ := cmd.Flags().GetString("method")
-		userAgent, _ := cmd.Flags().GetString("agent")
-		headers, _ := cmd.Flags().GetStringArray("header")
-		http1_1, _ := cmd.Flags().GetBool("http1.1")
-		http3, _ := cmd.Flags().GetBool("http3")
-		basicAuth, _ := cmd.Flags().GetString("basic")
+			if len(args) == 0 {
+				cmd.Help()
+				os.Exit(0)
+			}
 
-		param := param{
-			method:    method,
-			userAgent: userAgent,
-			headers:   headers,
-			http1_1:   http1_1,
-			http3:     http3,
-			basicAuth: basicAuth,
-		}
-		request(url, param)
-	},
-}
+			url := args[0]
+			method, _ := cmd.Flags().GetString("method")
+			userAgent, _ := cmd.Flags().GetString("agent")
+			headers, _ := cmd.Flags().GetStringArray("header")
+			http1_1, _ := cmd.Flags().GetBool("http1.1")
+			http3, _ := cmd.Flags().GetBool("http3")
+			basicAuth, _ := cmd.Flags().GetString("basic")
 
-func init() {
-	rootCmd.Flags().StringP("method", "X", "GET", "HTTP Request method")
-	rootCmd.Flags().StringP("agent", "A", "rj/v0.0.1", "User-Agent name")
-	rootCmd.Flags().StringArrayP("header", "H", nil, "HTTP Request Header")
-	rootCmd.Flags().BoolP("http1.1", "", false, "Use HTTP/1.1")
-	rootCmd.Flags().BoolP("http3", "", false, "Use HTTP/3")
-	rootCmd.Flags().StringP("basic", "u", "", "Basic Auth username:password")
+			param := param{
+				method:    method,
+				userAgent: userAgent,
+				headers:   headers,
+				http1_1:   http1_1,
+				http3:     http3,
+				basicAuth: basicAuth,
+
+				outputWriter: os.Stdout,
+			}
+			request(url, param)
+		},
+	}
+
+	cmd.Flags().StringP("method", "X", "GET", "HTTP Request method")
+	cmd.Flags().StringP("agent", "A", "rj/v0.0.1", "User-Agent name")
+	cmd.Flags().StringArrayP("header", "H", nil, "HTTP Request Header")
+	cmd.Flags().Bool("http1.1", false, "Use HTTP/1.1")
+	cmd.Flags().Bool("http3", false, "Use HTTP/3")
+	cmd.Flags().StringP("basic", "u", "", "Basic Auth username:password")
+
+	return cmd
 }
 
 func Execute() {
-	if err := rootCmd.Execute(); err != nil {
+	cmd := newCmd()
+	if err := cmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
@@ -175,7 +184,7 @@ func request(url string, param param) {
 		os.Exit(1)
 	}
 
-	fmt.Println(string(bytes))
+	fmt.Fprintln(param.outputWriter, string(bytes))
 }
 
 func http1_1Transport() *http.Transport {
