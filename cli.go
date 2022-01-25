@@ -32,6 +32,7 @@ type param struct {
 }
 
 func newCmd() *cobra.Command {
+
 	cmd := &cobra.Command{
 		Use:     "rj [url]",
 		Short:   "CLI for printing HTTP Response as JSON.",
@@ -66,7 +67,7 @@ func newCmd() *cobra.Command {
 	}
 
 	cmd.Flags().StringP("method", "X", "GET", "HTTP Request method")
-	cmd.Flags().StringP("agent", "A", "rj/v0.0.1", "User-Agent name")
+	cmd.Flags().StringP("agent", "A", "rj/"+Version, "User-Agent name")
 	cmd.Flags().StringArrayP("header", "H", nil, "HTTP Request Header")
 	cmd.Flags().Bool("http1.1", false, "Use HTTP/1.1")
 	cmd.Flags().Bool("http3", false, "Use HTTP/3")

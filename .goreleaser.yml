@@ -1,0 +1,42 @@
+project_name: 'rj'
+build:
+  binary: 'rj'
+  main: cmd/rj/main.go
+  env:
+    - CGO_ENABLED=0
+  goos:
+    - linux
+    - windows
+    - darwin
+  goarch:
+    - '386'
+    - amd64
+    - arm64
+  ignore:
+    - goos: darwin
+      goarch: '386'
+    - goos: windows
+      goarch: arm64
+archives:
+  - name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
+snapshot:
+  name_template: '{{ .Tag }}-next'
+changelog:
+  use: github
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+release:
+  draft: true
+  prerelease: auto
+brews:
+  - tap:
+      owner: yusukebe
+      name: homebrew-tap
+      token: '{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}'
+    folder: Formula
+    homepage: 'https://github.com/yusukebe/rj'
+    name: 'rj'
+    description: 'CLI for printing HTTP Response as JSON.'
+    license: 'MIT'
