@@ -2,7 +2,7 @@
 
 `rj` is a command line tool for printing HTTP Response as JSON.
 
-![Carbon](https://user-images.githubusercontent.com/10682/150896161-dd811e3b-fd43-4f69-bab3-451cca853ef5.png)
+![Carbon](https://user-images.githubusercontent.com/10682/150899489-76cff1cf-1101-4e4a-9737-a55f3e738ab8.png)
 
 ## Installation
 
@@ -51,7 +51,7 @@ Available options:
 
 With `jq`:
 
-![Screenshot](https://user-images.githubusercontent.com/10682/150894939-337d2431-1c91-4b36-8e5d-a60d255ed576.png)
+![Screenshot](https://user-images.githubusercontent.com/10682/150899603-3844cd81-eb6c-48eb-8bd4-86207785b520.png)
 
 ### HTTP/3
 
