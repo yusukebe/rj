@@ -167,7 +167,7 @@ func request(url string, param param) {
 	timing["dns_lookup"] = dnsMs
 	timing["tcp_connection"] = connectionMs
 	timing["tls_handshake"] = sslMs
-	timing["ttfb"] = ttfbMs
+	timing["server_processing"] = ttfbMs
 	timing["content_transfer"] = downloadMs
 	timing["total"] = totalMs
 	r["timing"] = timing
