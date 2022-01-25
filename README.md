@@ -63,6 +63,7 @@ Now, support HTTP/3 with `--http3` option:
 
 - [reorx/httpstat](https://github.com/reorx/httpstat)
 - [jaygooby/ttfb.sh](https://github.com/jaygooby/ttfb.sh)
+- [gfx/hj](https://github.com/gfx/hj)
 
 ## Author
 
