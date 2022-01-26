@@ -216,6 +216,9 @@ func http3RoundTripper() *http3.RoundTripper {
 }
 
 func timeToMs(t time.Time) float64 {
+	if time.Since(t).Nanoseconds() == math.MaxInt64 {
+		return 0.00
+	}
 	return floor(time.Since(t).Seconds())
 }
 
