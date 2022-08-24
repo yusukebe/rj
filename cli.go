@@ -94,7 +94,14 @@ func request(url string, param param) {
 	if param.headers != nil {
 		for _, h := range param.headers {
 			kv := strings.Split(h, ":")
-			req.Header.Set(strings.TrimSpace(kv[0]), kv[1])
+			name := strings.TrimSpace(kv[0])
+			value := kv[1]
+
+			if strings.EqualFold(name, "host") {
+				req.Host = value
+			} else {
+				req.Header.Set(name, value)
+			}
 		}
 	}
 
